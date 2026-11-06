@@ -1,50 +1,74 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# 个人 Blender/Unity 插件产品仓库 Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. 规格优先（Spec-First）
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+任何功能在写实现代码之前，MUST 先存在对应的 `spec.md`，并完成 `plan.md` 与 `tasks.md`。
+开发过程中发现需求漏洞或方案偏差时，MUST 先修改规格文档再改代码，禁止让代码与规格长期背离。
+规格文档（spec/plan/tasks）是每个功能的唯一事实源，口头约定不构成需求。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. 个人设备与合规边界
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+所有代码、素材、文档 MUST 仅在个人设备、个人时间、个人账号下完成，与本职工作的公司业务、
+代码、数据、模型资产完全隔离。插件选题 MUST 避开现雇主及其竞品的业务领域，不使用任何公司
+内部资料、接口协议或受 NDA 约束的信息。git 提交记录 MUST 不包含任何可识别雇主的信息。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. 平台 LTS 兼容基线
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Blender 插件 MUST 以当前 Blender LTS 版本（4.2 起）为最低兼容基线，Unity 工具 MUST 以当前
+Unity LTS 版本为基线。只使用官方稳定 API，不依赖未文档化的私有接口；版本兼容范围 MUST 在
+`bl_info`/包清单与产品文档中显式声明。平台大版本升级时，老产品 MUST 至少完成一次适配验证后
+才继续开发新功能。
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. 分层与低维护架构
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+插件代码 MUST 按职责分层：数据定义（properties）、业务逻辑（无 UI 依赖的核心模块）、
+Operator、界面（Panel）各自独立成文件。核心逻辑 MUST 可在不启动界面的情况下被调用和验证。
+UI 层禁止写业务规则，逻辑层禁止直接引用界面控件。每个文件保持单一职责，公共能力下沉为工具
+函数，避免复制粘贴式重复。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. 可独立验证的增量交付
+
+`tasks.md` 中的每个任务 MUST 可独立验证（手动复现步骤或脚本检查），粒度控制在一个晚上
+（约 2 小时）内可完成。每个任务完成后 MUST 立即 git 提交，提交信息关联任务编号，采用
+Conventional Commits 风格（如 `feat(export): M2-T3 ...`）。功能宁可砍范围按时交付 0.1 版，
+也不允许长期存在未发布的"完美版本"。
+
+### VI. 防御式错误处理与用户可理解提示
+
+所有外部输入（选中对象、文件路径、文件名、目录权限）MUST 先校验再使用。遇到异常情况
+（未选物体、目录不存在、非法文件名字符、空集合）MUST 返回用户可理解的中文提示并安全中止，
+禁止抛出未捕获的堆栈。涉及修改用户场景数据的操作 MUST 支持撤销（UNDO），批量操作 MUST
+能还原用户原有的选择状态。
+
+## 技术与工程约束
+
+- 语言：Blender 插件用 Python 3（随 Blender 发行版），Unity 工具用 C#，性能/硬件层可用 C++ 原生插件。
+- 文档语言：规格与开发笔记用中文；代码标识符、API、git 提交信息、面向国际市场的产品文档用英文。
+- 仓库组织：单仓库多产品，每个插件一个顶层目录；规格文档统一放 `specs/<NNN>-<slug>/`。
+- 不引入未经评估的第三方依赖；确需引入时必须在 plan.md 说明许可证（MUST 与 MIT 兼容）和维护状态。
+- AI 工具可用于生成样板代码、文档初稿和测试用例，但核心架构与关键逻辑 MUST 由本人理解并能独立解释，
+  AI 生成内容 MUST 经过人工验证后方可提交。
+
+## 开发工作流与质量门禁
+
+标准流程：constitution（一次） → specify → clarify（按需） → plan → tasks → analyze（按需）
+→ implement → converge，循环至 converge 报告 Converged。
+
+每个阶段进入下一阶段前的质量门禁：
+
+1. spec：无遗留 `[NEEDS CLARIFICATION]` 标记，所有功能需求可测试、成功标准可度量；
+2. plan：每个里程碑有明确验收条件，技术方案不违反本宪法任何原则；
+3. tasks：任务覆盖 plan 的全部里程碑，无超过一个晚上粒度的任务；
+4. implement：每任务一次提交，Blender 内手动验收通过，无控制台报错；
+5. converge：规格、任务、代码三者一致，验收测试场景全部通过。
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+本宪法效力高于仓库内任何其他开发约定；与宪法冲突的临时做法必须在当次提交中说明原因并尽快纠正。
+修订宪法 MUST 记录修订原因、版本号变化（遵循语义化版本：新增原则升 MINOR，原则移除或重定义
+升 MAJOR，文字澄清升 PATCH）和日期。每个新功能启动前对照宪法做一次合规自查；发现冲突时
+优先修规格和计划，而不是放宽原则。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-11-07 | **Last Amended**: 2026-11-07
