@@ -38,7 +38,7 @@ Operator 串行调度保证大批量时界面可响应，所有设置通过 Scen
 内存中不保留场景数据副本，导出结束即释放临时状态。
 
 **Scale/Scope**: 单场景单次导出对象上限按 50 个物体/集合设计并验证；设置项 10 个以内；
-对外 Operator 3 个、面板 1 个。
+对外 Operator 2 个（export、open_folder）、面板 1 个。
 
 ## Constitution Check
 
@@ -94,6 +94,9 @@ tests/
 **Structure Decision**: 沿用已建立的单插件多文件包结构，把原计划塞进 `exporter.py` 的
 命名、校验、分组三类纯逻辑拆成独立模块（`naming.py`/`validation.py`/`grouping.py`），
 它们不依赖 `bpy.ops`，可在无头脚本中直接断言，满足宪法原则 IV 的"核心可脱离界面验证"。
+`tests/` 目录与 `tests/smoke_test.py` 在 M2 第一个任务中显式创建；脚本头部负责把仓库根
+目录加入 `sys.path` 并以包形式 import（`from unity_fbx_exporter import grouping ...`），
+不依赖 Blender 的 addons 安装状态，保证后台模式可独立运行。
 
 ## Milestones
 
@@ -102,7 +105,7 @@ tests/
 | 里程碑 | 目标 | 验收条件（映射 spec） |
 |---|---|---|
 | M1 骨架（已完成） | 五文件结构、设置项、面板可显示并持久化 | 设置保存重开仍在；插件可启用禁用 |
-| M2 命名与校验基础 | naming.py + validation.py + ExportError 消息目录 | 无头脚本断言：非法字符替换、重名序号、空选择/坏目录被拦截（FR-008/FR-012） |
+| M2 命名与校验基础 | naming.py + validation.py + ExportError 消息目录 + register() 版本门 | 无头脚本断言：非法字符替换、重名序号、空选择/坏目录被拦截；低版本 Blender 启用时被版本门拦截（FR-008/FR-012/FR-013） |
 | M3 单物体导出闭环 | exporter.py 单组导出 + Unity 预设 + 选择快照还原 | 选中 1 个 Cube 导出 FBX，选择状态不变；Unity 导入轴向/缩放正确（FR-002/FR-010，US1） |
 | M4 三种分组模式 | grouping.py + 三种模式贯通 + 前后缀 + 网格过滤 + 集合实例例外 | 无头脚本覆盖三模式、嵌套集合、多集合链接、空物体跳过（FR-001/003/006，US1-3） |
 | M5 模态调度与场景安全 | 模态 Operator、进度报告、ESC 取消、Apply Transform 可撤销、打开目录 | 50 物体导出界面不卡死；撤销生效；异常全中文提示（FR-004/005/009/011，US5-6） |

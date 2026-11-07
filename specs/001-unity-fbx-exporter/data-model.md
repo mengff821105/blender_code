@@ -66,10 +66,12 @@ INITIALIZED → VALIDATING → READY → EXPORTING ──全部成功──→ C
 
 输入：source_name、prefix、suffix、目标目录、会话内已用文件名集合。
 
-处理顺序：
+处理顺序（前置条件：validation 已完成校验，COMBINED 模式的 combined_name 空值
+在进入本规则前已被 MSG_COMBINED_NAME_EMPTY 拦截，NamingRule 不再处理该报错）：
 
 1. 非法字符（`\ / : * ? " < > |` 与控制符）→ `_`；空格、中文保留；
-2. 组合 `base = prefix + cleaned_name + suffix`，空串兜底为 `export`；
+2. 组合 `base = prefix + cleaned_name + suffix`；仅当物体名/集合名本身为空时兜底为
+   `export`（合并模式的空名不走此兜底，由 validation 先报错）；
 3. 磁盘已存在或会话内已占用 → 末尾追加 `_1`、`_2` …（澄清 Q3）；
 4. 输出 `target_filename`，若发生过清洗或加序号，同步产生一条 warning。
 

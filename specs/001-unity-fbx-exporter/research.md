@@ -24,6 +24,9 @@
 - **Alternatives**:
   - 让用户自己在导出对话框改参数：违背产品价值（消除手工重复），否决。
   - 只在文档里写推荐参数：用户漏配即产生差评，否决。
+- **遗留验证点（M3 必做）**: apply_transform 开启时 transform_apply 与 bake_space_transform
+  同时作用，需用非均匀缩放物体在 Unity 中实测无二次烘焙；若出现偏差，优先保留
+  transform_apply 并将该开关下的 bake_space_transform 改为 False，结论回写本文件。
 
 ## R3. 逐组导出的上下文处理：选择快照 + 临时覆盖 + try/finally 还原
 

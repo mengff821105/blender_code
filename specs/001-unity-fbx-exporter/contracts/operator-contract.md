@@ -70,6 +70,10 @@
 | MSG_EXPORT_CANCELLED | 导出已取消：已完成 {ok} 个，剩余任务未执行 | ESC 取消 | WARNING |
 | MSG_VERSION_MISMATCH | 本插件要求 Blender {min_version} 或更高版本 | 版本拦截 | ERROR |
 
+> 版本拦截采用双保险（落实 FR-013）：① `bl_info` 的 `blender=(4,2,0)` 让低版本 Blender
+> 在插件列表中直接拒绝启用；② `register()` 内显式判断 `bpy.app.version`，不满足时抛异常并
+> 引用本消息，防止被强制加载。MSG_VERSION_MISMATCH 是第 2 道防线的文案，属可达代码。
+
 `{xxx}` 为运行期占位符。核心模块只抛 `ExportError(消息键或最终文案)`，
 Operator 负责 report，UI 文案不允许散落在 exporter/grouping 中。
 
@@ -92,7 +96,7 @@ Operator 负责 report，UI 文案不允许散落在 exporter/grouping 中。
 | axis_up | 'Y' | 同上 |
 | apply_unit_scale | True | |
 | global_scale | 1.0 | |
-| bake_space_transform | 跟随 apply_transform 开关 | 开=True，关=False |
+| bake_space_transform | 跟随 apply_transform 开关 | 开=True，关=False；与 transform_apply 同时生效时须在 M3 用非均匀缩放物体实测，确认无二次烘焙（research R2/R4 遗留验证点） |
 | use_mesh_modifiers | 跟随 apply_modifiers 开关 | |
 | object_types | only_meshes 开：`{'MESH','EMPTY'}`；关：默认全集 | EMPTY 保留以容纳集合实例 |
 | add_leaf_bones | False | Unity 不需要叶骨骼，避免多余节点 |
